@@ -7,10 +7,13 @@ const routes = [
         path: '/api/relations',
         handler: RelationController.createRelation,
         options: {
+            tags: ['api', 'relations'],
+            description: 'Create a new relation',
+            notes: 'Creates a new relation with specified attributes and tuples',
             validate: {
                 payload: Joi.object({
-                    name: Joi.string().required(),
-                    attributes: Joi.array().items(Joi.string()).required(),
+                    name: Joi.string().required().description('Name of the relation'),
+                    attributes: Joi.array().items(Joi.string()).required().description('List of attribute names'),
                     tuples: Joi.array().items(
                         Joi.object({
                             key: Joi.string().required(),
@@ -22,8 +25,26 @@ const routes = [
                                 )
                             ).required()
                         })
-                    ).required()
+                    ).required().description('Array of tuples')
                 })
+            },
+            response: {
+                status: {
+                    201: Joi.object({
+                        id: Joi.string(),
+                        name: Joi.string(),
+                        attributes: Joi.array().items(Joi.string()),
+                        tupleCount: Joi.number()
+                    }).description('Successfully created relation'),
+                    400: Joi.object({
+                        error: Joi.string(),
+                        details: Joi.string()
+                    }).description('Bad Request'),
+                    500: Joi.object({
+                        error: Joi.string(),
+                        details: Joi.string()
+                    }).description('Internal server error')
+                }
             }
         }
     },

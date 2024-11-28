@@ -1,6 +1,4 @@
 id,movie_id,actor_id,role,position
-1,1,1,Ellis Boyd 'Red' Redding,1
-2,2,2,Michael Corleone,1
-3,3,3,Bruce Wayne,1
-4,4,4,Vincent Vega,1
-5,5,5,Frodo Baggins,1
+1,1,1,Neo,1
+2,2,2,Cobb,1
+3,3,3,Cooper,1
