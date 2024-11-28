@@ -62,18 +62,7 @@ const routes = [
                 })
             }
         },
-        validate: {
-            payload: Joi.object({
-                file: Joi.any().required(),
-                schema: Joi.object({
-                    name: Joi.string().min(1).max(100).required(),
-                    attributes: Joi.array().items(
-                        Joi.string().min(1).max(100)
-                    ).min(1).required(),
-                    key: Joi.string().min(1).max(100).required()
-                }).required()
-            })
-}
+
     }
 ];
 
