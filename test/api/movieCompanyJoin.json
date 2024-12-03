@@ -1,0 +1,35 @@
+{
+    "joinTree": {
+      "relation": {
+        "name": "title",
+        "attributes": ["id", "title", "year"],
+        "tuples": [
+          [1, "The Dark Knight", 2008],
+          [2, "Inception", 2010],
+          [3, "Interstellar", 2014]
+        ]
+      },
+      "left": {
+        "relation": {
+          "name": "movie_companies",
+          "attributes": ["movie_id", "company_id"],
+          "tuples": [
+            [1, 101],
+            [2, 101],
+            [3, 101]
+          ]
+        }
+      },
+      "right": {
+        "relation": {
+          "name": "company_name",
+          "attributes": ["id", "name", "country_code"],
+          "tuples": [
+            [101, "Warner Bros.", "US"],
+            [102, "Paramount Pictures", "US"],
+            [103, "Universal Pictures", "US"]
+          ]
+        }
+      }
+    }
+  }

@@ -1,0 +1,28 @@
+{
+    "joinTree": {
+      "relation": {
+        "name": "title",
+        "attributes": ["id", "title", "year"],
+        "tuples": [
+          [1, "The Shawshank Redemption", 1994],
+          [2, "The Godfather", 1972],
+          [3, "The Dark Knight", 2008],
+          [4, "Pulp Fiction", 1994],
+          [5, "Forrest Gump", 1994]
+        ]
+      },
+      "left": {
+        "relation": {
+          "name": "movie_info_idx",
+          "attributes": ["movie_id", "info_type", "rating"],
+          "tuples": [
+            [1, "rating", 9.3],
+            [2, "rating", 9.2],
+            [3, "rating", 9.0],
+            [4, "rating", 8.9],
+            [5, "rating", 8.8]
+          ]
+        }
+      }
+    }
+  }

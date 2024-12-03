@@ -1,0 +1,113 @@
+{
+  "joinTree": {
+    "relation": {
+      "name": "title",
+      "attributes": [
+        "id",
+        "title",
+        "year"
+      ],
+      "tuples": [
+        [
+          1,
+          "The Dark Knight",
+          2008
+        ],
+        [
+          2,
+          "Batman Begins",
+          2005
+        ],
+        [
+          3,
+          "The Dark Knight Rises",
+          2012
+        ],
+        [
+          4,
+          "Joker",
+          2019
+        ],
+        [
+          5,
+          "Batman v Superman",
+          2016
+        ]
+      ]
+    },
+    "left": {
+      "relation": {
+        "name": "movie_info",
+        "attributes": [
+          "movie_id",
+          "info_type",
+          "genre"
+        ],
+        "tuples": [
+          [
+            1,
+            "genre",
+            "Action"
+          ],
+          [
+            2,
+            "genre",
+            "Action"
+          ],
+          [
+            3,
+            "genre",
+            "Action"
+          ],
+          [
+            4,
+            "genre",
+            "Drama"
+          ],
+          [
+            5,
+            "genre",
+            "Action"
+          ]
+        ]
+      }
+    },
+    "right": {
+      "relation": {
+        "name": "movie_info_idx",
+        "attributes": [
+          "movie_id",
+          "info_type",
+          "rating"
+        ],
+        "tuples": [
+          [
+            1,
+            "rating",
+            9
+          ],
+          [
+            2,
+            "rating",
+            8.2
+          ],
+          [
+            3,
+            "rating",
+            8.4
+          ],
+          [
+            4,
+            "rating",
+            8.4
+          ],
+          [
+            5,
+            "rating",
+            6.4
+          ]
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+// test/api/movieGenreRatingJoin.json
+{
+    "joinTree": {
+      "relation": {
+        "name": "title",
+        "attributes": ["id", "title", "year"],
+        "tuples": [
+          [1, "The Shawshank Redemption", 1994],
+          [2, "The Godfather", 1972],
+          [3, "The Dark Knight", 2008]
+        ]
+      },
+      "left": {
+        "relation": {
+          "name": "movie_info",
+          "attributes": ["movie_id", "info_type", "genre"],
+          "tuples": [
+            [1, "genre", "Drama"],
+            [2, "genre", "Crime"],
+            [3, "genre", "Action"]
+          ]
+        }
+      },
+      "right": {
+        "relation": {
+          "name": "movie_info_idx",
+          "attributes": ["movie_id", "info_type", "rating"],
+          "tuples": [
+            [1, "rating", 9.3],
+            [2, "rating", 9.2],
+            [3, "rating", 9.0]
+          ]
+        }
+      }
+    }
+  }

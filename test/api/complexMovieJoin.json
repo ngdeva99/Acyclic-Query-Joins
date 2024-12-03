@@ -1,0 +1,35 @@
+{
+    "joinTree": {
+      "relation": {
+        "name": "title",
+        "attributes": ["id", "title", "year"],
+        "tuples": [
+          [1, "Inception", 2010],
+          [2, "The Dark Knight", 2008],
+          [3, "Dunkirk", 2017]
+        ]
+      },
+      "left": {
+        "relation": {
+          "name": "cast_info",
+          "attributes": ["movie_id", "person_id", "role"],
+          "tuples": [
+            [1, 201, "Director"],
+            [2, 201, "Director"],
+            [3, 201, "Director"]
+          ]
+        }
+      },
+      "right": {
+        "relation": {
+          "name": "name",
+          "attributes": ["id", "name", "gender"],
+          "tuples": [
+            [201, "Christopher Nolan", "M"],
+            [202, "Steven Spielberg", "M"],
+            [203, "Martin Scorsese", "M"]
+          ]
+        }
+      }
+    }
+  }
