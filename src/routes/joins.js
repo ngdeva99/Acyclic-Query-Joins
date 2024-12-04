@@ -12,7 +12,8 @@ module.exports = [
                         relation: Joi.object({
                             name: Joi.string().required(),
                             attributes: Joi.array().items(Joi.string()).required(),
-                            tuples: Joi.array().items(Joi.array()).required()
+                            tuples: Joi.array().items(Joi.array()).required(),
+                            performance: Joi.object().optional()
                         }).required(),
                         left: Joi.object().optional(),
                         right: Joi.object().optional()

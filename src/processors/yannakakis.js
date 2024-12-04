@@ -225,6 +225,44 @@ class YannakakisProcessor {
             return null;
         }
     }
+    
+    static logMemoryUsage() {
+        const used = process.memoryUsage();
+        console.log('Memory Usage:');
+        const memoryUsage = {
+            heap: `  Heap Used: ${Math.round(used.heapUsed / 1024 / 1024)} MB`,
+            totalHeap: `  Heap Total: ${Math.round(used.heapTotal / 1024 / 1024)} MB`,
+            rss: `  RSS: ${Math.round(used.rss / 1024 / 1024)} MB`  
+        }
+
+        console.log(`  Heap Used: ${Math.round(used.heapUsed / 1024 / 1024)} MB`);
+        console.log(`  Heap Total: ${Math.round(used.heapTotal / 1024 / 1024)} MB`);
+        console.log(`  RSS: ${Math.round(used.rss / 1024 / 1024)} MB`);
+
+        return memoryUsage;
+    }
+
+    static applySelection(relation, predicate) {
+        return new Relation(
+            relation.name,
+            relation.attributes,
+            relation.tuples.filter(predicate)
+        );
+    }
+
+    static applyProjection(relation, attributes) {
+        const indices = attributes.map(attr => 
+            [...relation.attributes].indexOf(attr)
+        ).filter(i => i !== -1);
+        
+        return new Relation(
+            relation.name,
+            attributes,
+            relation.tuples.map(tuple => 
+                indices.map(i => tuple[i])
+            )
+        );
+    }
 
     static process(joinTree) {
         if (!joinTree || !joinTree.root || !joinTree.root.relation) {
@@ -232,6 +270,11 @@ class YannakakisProcessor {
         }
 
         console.log('Starting Yannakakis processing...');
+
+        // Phase 0: Apply selections first if present
+        if (joinTree.selections) {
+            joinTree = this.applySelections(joinTree);
+        }
         
         // Phase 1a: Bottom-up semi-joins
         console.log('Performing bottom-up phase...');
@@ -244,6 +287,11 @@ class YannakakisProcessor {
         // Phase 2: Join Phase
         console.log('Performing join phase...');
         const result = this.joinPhase(joinTree.root);
+
+        // Phase 3: Apply projections if specified
+        if (joinTree.projections) {
+            return this.applyProjection(joinResult, joinTree.projections);
+        }
         
         if (!result) {
             throw new Error('Join phase failed to produce a result');
@@ -254,6 +302,7 @@ class YannakakisProcessor {
         if (result.tuples) {
             fs.appendFileSync(`report-1.txt`, JSON.stringify(result.tuples));
         }
+
         return result;
     }
 }

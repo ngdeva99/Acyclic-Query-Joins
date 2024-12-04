@@ -14,7 +14,10 @@ class MovieLensTestSuite {
             intermediateResults: []
         };
         // Define chunk size
-        this.CHUNK_SIZE = 1000; // Load 1000 records for each relation
+        // Use env variable with fallback
+        this.CHUNK_SIZE = parseInt(process.env.CHUNK_SIZE || 100000);
+        this.DATA_DIR = process.env.DATA_DIR || 'data/ml-25m';
+
     }
 
     async loadData() {
@@ -22,19 +25,19 @@ class MovieLensTestSuite {
         
         // Load limited chunks of data
         this.relations.movies = await this.loadRelationChunk(
-            'data/ml-25m/movies.csv',
+            `${this.DATA_DIR}/movies.csv`,
             ['movieId', 'title', 'genres'],
             'movies'
         );
 
         this.relations.ratings = await this.loadRelationChunk(
-            'data/ml-25m/ratings.csv',
+            `${this.DATA_DIR}/ratings.csv`,
             ['userId', 'movieId', 'rating', 'timestamp'],
             'ratings'
         );
 
         this.relations.tags = await this.loadRelationChunk(
-            'data/ml-25m/tags.csv',
+           `${this.DATA_DIR}/tags.csv`,
             ['userId', 'movieId', 'tag', 'timestamp'],
             'tags'
         );
@@ -345,3 +348,5 @@ runTests().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
 });
+
+module.exports = MovieLensTestSuite;
