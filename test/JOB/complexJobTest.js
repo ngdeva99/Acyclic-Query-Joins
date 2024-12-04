@@ -145,8 +145,6 @@ function verifyComplexResults(result, data) {
 // Run both tests
 async function runAllTests() {
     try {
-        await testJOBQuery();
-        console.log('\n' + '='.repeat(50) + '\n');
         await testComplexJOBQuery();
     } catch (error) {
         console.error('Test failed:', error);

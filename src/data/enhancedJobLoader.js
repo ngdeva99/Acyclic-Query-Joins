@@ -4,14 +4,27 @@ const csv = require('csv-parse');
 const { Relation } = require('../models/joinTree');
 
 class EnhancedJobLoader {
+    // Static maps for ID tracking
+    static companyMap = new Map();
+    static locationMap = new Map();
+    static salaryRangeMap = new Map();
+    static experienceLevelMap = new Map();
+    static jobCategoryMap = new Map();
+    static industryMap = new Map();
+    static skillMap = new Map();
+
     static async loadData(filePath, chunkSize = null) {
         console.log('Starting data loading process...');
+        
+        // Clear all maps before loading new data
+        this.clearAllMaps();
         
         // Load and preprocess raw data
         const rawJobs = await this.loadRawJobs(filePath, chunkSize);
         console.log(`Loaded ${rawJobs.length} raw job entries`);
 
         // Transform data into normalized relations
+        console.log('Transforming raw data into normalized relations...');
         const relations = await this.transformData(rawJobs);
         
         // Calculate statistics
@@ -21,6 +34,16 @@ class EnhancedJobLoader {
             ...relations,
             stats
         };
+    }
+
+    static clearAllMaps() {
+        this.companyMap.clear();
+        this.locationMap.clear();
+        this.salaryRangeMap.clear();
+        this.experienceLevelMap.clear();
+        this.jobCategoryMap.clear();
+        this.industryMap.clear();
+        this.skillMap.clear();
     }
 
     static async loadRawJobs(filePath, chunkSize) {
@@ -45,34 +68,20 @@ class EnhancedJobLoader {
         });
     }
 
-    static preprocessRow(row) {
-        return {
-            ...row,
-            derived_experience_level: this.deriveExperienceLevel(row.title, row.description),
-            normalized_salary: this.normalizeSalary(row.salary_range),
-            skills_list: this.extractSkills(row.description),
-            normalized_location: this.normalizeLocation(row.location),
-            industry_category: this.deriveIndustryCategory(row.company_name, row.description),
-            job_category: this.deriveJobCategory(row.title, row.description)
-        };
-    }
-
     static async transformData(rawJobs) {
-        console.log('Transforming raw data into normalized relations...');
-
-        // Create base relations
-        const jobs = this.createJobsRelation(rawJobs);
+        // Create base relations in specific order to maintain referential integrity
         const companies = this.createCompaniesRelation(rawJobs);
         const locations = this.createLocationsRelation(rawJobs);
         const skills = this.createSkillsRelation(rawJobs);
-
-        // Create derived relations
         const salaryRanges = this.createSalaryRangesRelation(rawJobs);
-        const jobSkills = this.createJobSkillsRelation(rawJobs, skills);
-        const industries = this.createIndustriesRelation(rawJobs);
-        const jobCategories = this.createJobCategoriesRelation(rawJobs);
         const experienceLevels = this.createExperienceLevelsRelation(rawJobs);
-        const companyIndustries = this.createCompanyIndustriesRelation(rawJobs, industries);
+        const jobCategories = this.createJobCategoriesRelation(rawJobs);
+        const industries = this.createIndustriesRelation(rawJobs);
+
+        // Create dependent relations
+        const jobs = this.createJobsRelation(rawJobs);
+        const jobSkills = this.createJobSkillsRelation(rawJobs);
+        const companyIndustries = this.createCompanyIndustriesRelation(rawJobs);
 
         return {
             jobs,
@@ -105,49 +114,34 @@ class EnhancedJobLoader {
     }
 
     static createCompaniesRelation(rawJobs) {
-        const companies = new Map();
         let companyId = 1;
-
+        
         rawJobs.forEach(job => {
-            if (!companies.has(job.company_name)) {
-                companies.set(job.company_name, {
-                    id: companyId++,
-                    name: job.company_name
-                });
+            if (!this.companyMap.has(job.company_name)) {
+                this.companyMap.set(job.company_name, companyId++);
             }
         });
 
         return new Relation(
             'companies',
             ['company_id', 'name'],
-            Array.from(companies.values()).map(company => [
-                company.id,
-                company.name
-            ])
+            Array.from(this.companyMap.entries()).map(([name, id]) => [id, name])
         );
     }
 
     static createLocationsRelation(rawJobs) {
-        const locations = new Map();
         let locationId = 1;
 
         rawJobs.forEach(job => {
-            const normalizedLocation = job.normalized_location;
-            if (!locations.has(normalizedLocation)) {
-                locations.set(normalizedLocation, {
-                    id: locationId++,
-                    location: normalizedLocation
-                });
+            if (!this.locationMap.has(job.normalized_location)) {
+                this.locationMap.set(job.normalized_location, locationId++);
             }
         });
 
         return new Relation(
             'locations',
             ['location_id', 'location'],
-            Array.from(locations.values()).map(loc => [
-                loc.id,
-                loc.location
-            ])
+            Array.from(this.locationMap.entries()).map(([location, id]) => [id, location])
         );
     }
 
@@ -157,53 +151,45 @@ class EnhancedJobLoader {
             job.skills_list.forEach(skill => uniqueSkills.add(skill));
         });
 
+        let skillId = 1;
+        uniqueSkills.forEach(skill => {
+            this.skillMap.set(skill, skillId++);
+        });
+
         return new Relation(
             'skills',
             ['skill_id', 'skill_name'],
-            Array.from(uniqueSkills).map((skill, index) => [
-                index + 1,
-                skill
-            ])
+            Array.from(this.skillMap.entries()).map(([skill, id]) => [id, skill])
         );
     }
 
     static createSalaryRangesRelation(rawJobs) {
-        const uniqueRanges = new Map();
         let rangeId = 1;
 
         rawJobs.forEach(job => {
             const key = `${job.normalized_salary.min}-${job.normalized_salary.max}`;
-            if (!uniqueRanges.has(key)) {
-                uniqueRanges.set(key, {
-                    id: rangeId++,
-                    min: job.normalized_salary.min,
-                    max: job.normalized_salary.max
-                });
+            if (!this.salaryRangeMap.has(key)) {
+                this.salaryRangeMap.set(key, rangeId++);
             }
         });
 
         return new Relation(
             'salary_ranges',
             ['range_id', 'min_salary', 'max_salary'],
-            Array.from(uniqueRanges.values()).map(range => [
-                range.id,
-                range.min,
-                range.max
-            ])
+            Array.from(this.salaryRangeMap.entries()).map(([key, id]) => {
+                const [min, max] = key.split('-').map(Number);
+                return [id, min, max];
+            })
         );
     }
 
-    static createJobSkillsRelation(rawJobs, skillsRelation) {
-        const skillNameToId = new Map(
-            skillsRelation.tuples.map(([id, name]) => [name, id])
-        );
-        
+    static createJobSkillsRelation(rawJobs) {
         const jobSkills = [];
         let relationId = 1;
 
         rawJobs.forEach((job, jobIndex) => {
             job.skills_list.forEach(skill => {
-                const skillId = skillNameToId.get(skill);
+                const skillId = this.skillMap.get(skill);
                 if (skillId) {
                     jobSkills.push([
                         relationId++,
@@ -221,7 +207,138 @@ class EnhancedJobLoader {
         );
     }
 
-    // Helper methods for data derivation
+    static createExperienceLevelsRelation(rawJobs) {
+        const levels = new Set(rawJobs.map(job => job.derived_experience_level));
+        let levelId = 1;
+
+        levels.forEach(level => {
+            this.experienceLevelMap.set(level, levelId++);
+        });
+
+        return new Relation(
+            'experience_levels',
+            ['level_id', 'level'],
+            Array.from(this.experienceLevelMap.entries()).map(([level, id]) => [id, level])
+        );
+    }
+
+    static createJobCategoriesRelation(rawJobs) {
+        const categories = new Set(rawJobs.map(job => job.job_category));
+        let categoryId = 1;
+
+        categories.forEach(category => {
+            this.jobCategoryMap.set(category, categoryId++);
+        });
+
+        return new Relation(
+            'job_categories',
+            ['category_id', 'name'],
+            Array.from(this.jobCategoryMap.entries()).map(([category, id]) => [id, category])
+        );
+    }
+
+    static createIndustriesRelation(rawJobs) {
+        const industries = new Set(rawJobs.map(job => job.industry_category));
+        let industryId = 1;
+
+        industries.forEach(industry => {
+            this.industryMap.set(industry, industryId++);
+        });
+
+        return new Relation(
+            'industries',
+            ['industry_id', 'name'],
+            Array.from(this.industryMap.entries()).map(([industry, id]) => [id, industry])
+        );
+    }
+
+    static createCompanyIndustriesRelation(rawJobs) {
+        const relations = new Map();
+        let relationId = 1;
+
+        rawJobs.forEach(job => {
+            const key = `${job.company_name}-${job.industry_category}`;
+            if (!relations.has(key)) {
+                relations.set(key, {
+                    id: relationId++,
+                    companyId: this.getCompanyId(job.company_name),
+                    industryId: this.getIndustryId(job.industry_category)
+                });
+            }
+        });
+
+        return new Relation(
+            'company_industries',
+            ['relation_id', 'company_id', 'industry_id'],
+            Array.from(relations.values()).map(relation => [
+                relation.id,
+                relation.companyId,
+                relation.industryId
+            ])
+        );
+    }
+
+    // ID getter methods
+    static getCompanyId(companyName) {
+        return this.companyMap.get(companyName) || null;
+    }
+
+    static getLocationId(location) {
+        return this.locationMap.get(location) || null;
+    }
+
+    static getSalaryRangeId(salaryRange) {
+        const key = `${salaryRange.min}-${salaryRange.max}`;
+        return this.salaryRangeMap.get(key) || null;
+    }
+
+    static getExperienceLevelId(level) {
+        return this.experienceLevelMap.get(level) || null;
+    }
+
+    static getJobCategoryId(category) {
+        return this.jobCategoryMap.get(category) || null;
+    }
+
+    static getIndustryId(industry) {
+        return this.industryMap.get(industry) || null;
+    }
+
+    // Data processing helper methods
+    static preprocessRow(row) {
+        try {
+            return {
+                ...row,
+                derived_experience_level: this.deriveExperienceLevel(
+                    row.title || '', 
+                    row.description || ''
+                ),
+                normalized_salary: this.normalizeSalary(row.salary_range),
+                skills_list: this.extractSkills(row.description),
+                normalized_location: this.normalizeLocation(row.location),
+                industry_category: this.deriveIndustryCategory(
+                    row.company_name || '', 
+                    row.description || ''
+                ),
+                job_category: this.deriveJobCategory(
+                    row.title || '', 
+                    row.description || ''
+                )
+            };
+        } catch (error) {
+            console.error(`Error preprocessing row:`, error);
+            return {
+                ...row,
+                derived_experience_level: 'unknown',
+                normalized_salary: { min: null, max: null },
+                skills_list: [],
+                normalized_location: 'unknown',
+                industry_category: 'unknown',
+                job_category: 'unknown'
+            };
+        }
+    }
+
     static deriveExperienceLevel(title, description) {
         const text = `${title} ${description}`.toLowerCase();
         
@@ -273,10 +390,7 @@ class EnhancedJobLoader {
     }
 
     static extractSkills(description) {
-        // Handle undefined or null description
-        if (!description) {
-            return [];
-        }
+        if (!description) return [];
 
         const commonSkills = [
             'python', 'java', 'javascript', 'sql', 'aws', 'docker',
@@ -301,41 +415,6 @@ class EnhancedJobLoader {
         }
     }
 
-    static preprocessRow(row) {
-        try {
-            return {
-                ...row,
-                derived_experience_level: this.deriveExperienceLevel(
-                    row.title || '', 
-                    row.description || ''
-                ),
-                normalized_salary: this.normalizeSalary(row.salary_range),
-                skills_list: this.extractSkills(row.description),
-                normalized_location: this.normalizeLocation(row.location),
-                industry_category: this.deriveIndustryCategory(
-                    row.company_name || '', 
-                    row.description || ''
-                ),
-                job_category: this.deriveJobCategory(
-                    row.title || '', 
-                    row.description || ''
-                )
-            };
-        } catch (error) {
-            console.error(`Error preprocessing row:`, error);
-            // Return a default row structure if processing fails
-            return {
-                ...row,
-                derived_experience_level: 'unknown',
-                normalized_salary: { min: null, max: null },
-                skills_list: [],
-                normalized_location: 'unknown',
-                industry_category: 'unknown',
-                job_category: 'unknown'
-            };
-        }
-    }
-
     static normalizeLocation(location) {
         if (!location) return 'Unknown';
 
@@ -346,6 +425,7 @@ class EnhancedJobLoader {
             .split(/[,\-]/)[0]
             .trim() || 'Unknown';
     }
+
 
     static deriveIndustryCategory(companyName, description) {
         const text = `${companyName} ${description}`.toLowerCase();
