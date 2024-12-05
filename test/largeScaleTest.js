@@ -99,12 +99,21 @@ class MovieLensTestSuite {
 
     async runQueries() {
         console.log('\nRunning queries on chunked dataset...');
-        await this.runQuery1();
-        // await this.runQuery2();
-        // await this.runQuery3();
-        // await this.runQuery4();
-        // await this.runQuery5();
-        // await this.runQuery6();
+        //await this.runQuery1();
+        await this.runQuery2();
+        await this.runQuery3();
+        await this.runQuery4();
+        await this.runQuery5();
+        await this.runQuery6();
+    }
+
+    getAttributes(query, seconds, nanoseconds, result) {
+        return {
+            query_execution_time: `${seconds}s ${nanoseconds/1000000}ms`,
+            result_size: `${result.tuples.length} tuples`,
+            sample_results: result.tuples.slice(0, 3),
+            memory_usage: this.logMemoryUsage(query)
+        };
     }
 
     async runQuery1() {
@@ -133,16 +142,9 @@ class MovieLensTestSuite {
     
         console.log(`Query 1 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
-        console.log('Sample results:', result.tuples.slice(0, 3));
-        
-        const attributes = {
-            query_execution_time: `${seconds}s ${nanoseconds/1000000}ms`,
-            result_size: `${result.tuples.length} tuples`,
-            sample_results: result.tuples.slice(0, 3),
-            memory_usage: this.logMemoryUsage('Query 1')
-        }
+        console.log('Sample results:', result.tuples.slice(0, 3)); 
 
-        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(attributes));
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 1', seconds, nanoseconds, result)));
     }
     
     async runQuery2() {
@@ -168,7 +170,9 @@ class MovieLensTestSuite {
         console.log(`Query 2 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
         console.log('Sample results:', result.tuples.slice(0, 3));
-        this.logMemoryUsage('Query 2');
+        const queryType = 'Movies-with-both-ratings-4.5-above-and-tags'
+
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 2',  seconds, nanoseconds, result)));
     }
     
     async runQuery3() {
@@ -200,7 +204,8 @@ class MovieLensTestSuite {
         console.log(`Query 3 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
         console.log('Sample results:', result.tuples.slice(0, 3));
-        this.logMemoryUsage('Query 3');
+        const queryType = 'Action-movies-with-high-ratings-and-tags'
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 3',  seconds, nanoseconds, result)));
     }
     
     async runQuery4() {
@@ -231,7 +236,8 @@ class MovieLensTestSuite {
         console.log(`Query 4 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
         console.log('Sample results:', result.tuples.slice(0, 3));
-        this.logMemoryUsage('Query 4');
+        const queryType = 'Users-with-consistently-high-ratings-4-above-and-their-rated-movies'
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 4',  seconds, nanoseconds, result)));
     }
     
     async runQuery5() {
@@ -257,10 +263,11 @@ class MovieLensTestSuite {
         console.log(`Query 5 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
         console.log('Sample results:', result.tuples.slice(0, 3));
-        this.logMemoryUsage('Query 5');
+        const queryType = 'Movies-with-multiple-genres-their-ratings-and-tags'
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 5', seconds, nanoseconds, result)));
     }
     
-    async runQuery7() {
+    async runQuery6() {
         // Find movies with both user ratings and tags in specific genres
         console.log('\nExecuting Query 6: Drama or Comedy movies with both ratings and tags');
         
@@ -289,32 +296,8 @@ class MovieLensTestSuite {
         console.log(`Query 6 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
         console.log(`Result size: ${result.tuples.length} tuples`);
         console.log('Sample results:', result.tuples.slice(0, 3));
-        this.logMemoryUsage('Query 6');
-    }
-
-    async runQuery8() {
-        // Movies with tags and their ratings
-        console.log('\nExecuting Query 2: Movies with tags and ratings');
-        
-        const startTime = process.hrtime();
-        const joinTree = new JoinTree();
-        
-        joinTree.root.relation = this.relations.movies;
-        joinTree.root.left = { relation: this.relations.tags };
-        joinTree.root.right = { relation: this.relations.ratings };
-
-        // Process and measure
-        const result = YannakakisProcessor.process(joinTree);
-        const [seconds, nanoseconds] = process.hrtime(startTime);
-
-        // Log results
-        console.log(`Query 2 execution time: ${seconds}s ${nanoseconds/1000000}ms`);
-        console.log(`Result size: ${result.tuples.length} tuples`);
-        this.logMemoryUsage('Query 2');
-        
-        // Print sample results
-        console.log('Sample results:');
-        console.log(result.tuples.slice(0, 5));
+        const queryType = 'Drama-or-Comedy-movies-with-both-ratings-and-tags'
+        fs.writeFileSync(`${reportPath+queryType}-attributes.json`, JSON.stringify(this.getAttributes('Query 6', seconds, nanoseconds, result)));
     }
 
     logMemoryUsage(queryName) {
