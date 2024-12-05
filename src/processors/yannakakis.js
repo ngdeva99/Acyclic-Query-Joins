@@ -13,61 +13,6 @@ class YannakakisProcessor {
         );
     }
 
-    // static joinRelations(rel1, rel2) {
-    //     if (!rel1 || !rel2) {
-    //         throw new Error('Invalid relations for join');
-    //     }
-
-    //     const commonAttributes = this.getCommonAttributes(rel1, rel2);
-        
-    //     // Get indices for common attributes
-    //     const rel1CommonIndices = commonAttributes.map(attr => 
-    //         [...rel1.attributes].indexOf(attr)
-    //     );
-    //     const rel2CommonIndices = commonAttributes.map(attr =>  
-    //         [...rel2.attributes].indexOf(attr)
-    //     );
-
-    //     // Get all attributes from rel1
-    //     const rel1Attributes = [...rel1.attributes];
-
-    //     // Get unique attributes from rel2 (not in common with rel1)
-    //     const rel2UniqueAttrs = [...rel2.attributes].filter(attr => 
-    //         !commonAttributes.includes(attr)
-    //     );
-    //     const rel2UniqueIndices = rel2UniqueAttrs.map(attr => 
-    //         [...rel2.attributes].indexOf(attr)
-    //     );
-
-    //     // Combine all attributes
-    //     const resultAttributes = [...rel1Attributes, ...rel2UniqueAttrs];
-
-    //     // Perform the join
-    //     const resultTuples = [];
-    //     for (const tuple1 of rel1.tuples) {
-    //         const key1 = JSON.stringify(rel1CommonIndices.map(i => tuple1[i]));
-            
-    //         for (const tuple2 of rel2.tuples) {
-    //             const key2 = JSON.stringify(rel2CommonIndices.map(i => tuple2[i]));
-                
-    //             if (key1 === key2) {
-    //                 const newTuple = [
-    //                     ...tuple1,
-    //                     ...rel2UniqueIndices.map(i => tuple2[i])
-    //                 ];
-    //                 resultTuples.push(newTuple);
-    //             }
-    //         }
-    //     }
-
-    //     return new Relation(
-    //         `${rel1.name}_${rel2.name}`,
-    //         resultAttributes,
-    //         resultTuples
-    //     );
-    // }
-
-
     static joinRelations(rel1, rel2) {
         if (!rel1 || !rel2) {
             throw new Error('Invalid relations for join');

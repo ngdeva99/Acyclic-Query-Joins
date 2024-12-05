@@ -1,3 +1,5 @@
+// deprecated -> refer Jointree Class
+
 class Relation {
     constructor(name, attributes, tuples) {
         this.name = name;
