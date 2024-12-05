@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "test": "jest",
     "dev": "nodemon src/server.js",
-    "test-dblp": "node test/dblp/run-tests.js"
+    "test-dblp": "node test/dblp/run-tests.js",
+    "test:watch": "jest --watch"
   },
   "jest": {
     "testEnvironment": "node",
@@ -24,6 +25,7 @@
     "csv-writer": "^1.6.0",
     "fast-xml-parser": "^4.5.0",
     "lodash": "^4.17.21",
+    "supertest": "^7.0.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

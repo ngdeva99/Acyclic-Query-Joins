@@ -15,7 +15,7 @@ class MovieLensTestSuite {
         };
         // Define chunk size
         // Use env variable with fallback
-        this.CHUNK_SIZE = parseInt(process.env.CHUNK_SIZE || 100000);
+        this.CHUNK_SIZE = parseInt(process.env.CHUNK_SIZE || 1000);
         this.DATA_DIR = process.env.DATA_DIR || 'data/ml-25m';
 
     }
